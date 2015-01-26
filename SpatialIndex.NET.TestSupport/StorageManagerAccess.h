@@ -13,7 +13,7 @@ namespace Konscious
 			public ref class StorageManagerAccess : System::IDisposable
 			{
 			public:
-				StorageManagerAccess(IStorageManager ^maanger);
+				StorageManagerAccess(IStorageManager ^manager);
 
 				~StorageManagerAccess();
 

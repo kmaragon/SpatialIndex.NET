@@ -1,7 +1,5 @@
 #pragma once
 
-using namespace System;
-
 #pragma managed(push, off)
 #include <spatialindex/SpatialIndex.h>
 #pragma managed(pop)
@@ -16,7 +14,7 @@ namespace Konscious
 		/// however, dear user, please think of it as an interface. The only thing this
 		/// gives you is some memory management and native object wrapping
 		/// </remarks>
-		public ref class IStorageManager abstract : IDisposable
+		public ref class IStorageManager abstract : System::IDisposable
 		{
 		public:
 			/// <summary>Constructor</summary>
