@@ -87,27 +87,39 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ActionExecutorVisitor.h" />
     <ClInclude Include="DiskStorageManager.h" />
+    <ClInclude Include="InternalHelpers.h" />
     <ClInclude Include="IShape.h" />
+    <ClInclude Include="ISpatialIndex.h" />
     <ClInclude Include="IStorageManager.h" />
+    <ClInclude Include="ListConstructionVisitor.h" />
     <ClInclude Include="ManagedStorageManagerWrapper.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="IManagedStorageManager.h" />
     <ClInclude Include="SpatialIndexException.h" />
     <ClInclude Include="Stdafx.h" />
+    <ClInclude Include="UnmanagedBorrowedShape.h" />
+    <ClInclude Include="WholeWorldShape.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ActionExecutorVisitor.cpp" />
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="DiskStorageManager.cpp" />
+    <ClCompile Include="InternalHelpers.cpp" />
     <ClCompile Include="IShape.cpp" />
+    <ClCompile Include="ISpatialIndex.cpp" />
     <ClCompile Include="IStorageManager.cpp" />
     <ClCompile Include="IManagedStorageManager.cpp" />
+    <ClCompile Include="ListConstructionVisitor.cpp" />
     <ClCompile Include="ManagedStorageManagerWrapper.cpp" />
     <ClCompile Include="SpatialIndexException.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="UnmanagedBorrowedShape.cpp" />
+    <ClCompile Include="WholeWorldShape.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc" />

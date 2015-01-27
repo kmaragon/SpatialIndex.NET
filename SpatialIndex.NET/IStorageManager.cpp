@@ -5,14 +5,23 @@
 using namespace Konscious::SpatialIndex;
 
 IStorageManager::IStorageManager() :
-	unmanagedObject(nullptr)
+	_unmanagedObject(nullptr)
 {
+}
+
+::SpatialIndex::IStorageManager *IStorageManager::getManager()
+{
+	if (_unmanagedObject == nullptr)
+	{
+		_unmanagedObject = this->createUnmanagedManager();
+	}
+	return _unmanagedObject;
 }
 
 IStorageManager::~IStorageManager()
 {
-	if (unmanagedObject == nullptr)
+	if (_unmanagedObject == nullptr)
 	{
-		delete unmanagedObject;
+		delete _unmanagedObject;
 	}
 }

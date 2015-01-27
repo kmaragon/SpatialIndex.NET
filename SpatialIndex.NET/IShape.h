@@ -13,13 +13,19 @@ namespace Konscious
 		{
 		public:
 			IShape();
-			~IShape();
+			virtual ~IShape();
+
+			property System::Int64 Id
+			{
+				System::Int64 get();
+				void set(System::Int64);
+			}
 
 		internal:
-			virtual ::SpatialIndex::IShape *createRealShape() = 0;
+			virtual ::SpatialIndex::IShape *getShape() = 0;
 
 		private:
-			::SpatialIndex::IShape *_realShape;
+			int64_t _id;
 		};
 	}
 }

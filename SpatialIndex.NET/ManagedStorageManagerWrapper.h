@@ -11,7 +11,7 @@ namespace Konscious
 	{
 		namespace _native
 		{
-			class ManagedStorageManagerWrapper : public ::SpatialIndex::IStorageManager
+			private class ManagedStorageManagerWrapper : public ::SpatialIndex::IStorageManager
 			{
 			public:
 				ManagedStorageManagerWrapper(gcroot<IManagedStorageManager ^> realManager);

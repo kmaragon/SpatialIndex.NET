@@ -27,8 +27,9 @@ namespace Konscious
 			/// <summary>create the native IStorageManager</summary>
 			virtual ::SpatialIndex::IStorageManager *createUnmanagedManager() = 0;
 
+			::SpatialIndex::IStorageManager *getManager();
 		private:
-			::SpatialIndex::IStorageManager *unmanagedObject;
+			::SpatialIndex::IStorageManager *_unmanagedObject;
 		};
 	}
 }
