@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SpatialIndex.NET.Test.Helpers
+namespace Konscious.SpatialIndex.Test.Helpers
 {
     public static class DataHelpers
     {

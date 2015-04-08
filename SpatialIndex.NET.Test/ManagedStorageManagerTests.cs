@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
+using Konscious.SpatialIndex.Test.Helpers;
 using Konscious.SpatialIndex.Test.Implementations;
-using SpatialIndex.NET.Test.Helpers;
 using Xunit;
 
 namespace Konscious.SpatialIndex.Test

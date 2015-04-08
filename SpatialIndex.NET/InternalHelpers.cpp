@@ -1,9 +1,11 @@
 #include "stdafx.h"
 #include "InternalHelpers.h"
 #include "UnmanagedBorrowedShape.h"
+#include "ManagedShapeWrapper.h"
 
 using namespace Konscious::SpatialIndex;
 using namespace Konscious::SpatialIndex::_helpers;
+using namespace Konscious::SpatialIndex::_native;
 using namespace Konscious::SpatialIndex::_shapes;
 using namespace System;
 using namespace System::Collections::Generic;
@@ -30,8 +32,13 @@ KeyValuePair<IShape ^, array<byte> ^> InternalHelpers::pairFromData(const ::Spat
 	return KeyValuePair<IShape ^, array<byte> ^>(retShape, data);
 }
 
-IShape ^InternalHelpers::getManagedFromNative(::SpatialIndex::IShape *shape)
+IShape ^InternalHelpers::getManagedFromNative(const ::SpatialIndex::IShape *shape)
 {
-	/// TODO: update this when a managed shape exists
+	// is this worth the cost?
+	auto wrapped = dynamic_cast<const ManagedShapeWrapper *>(shape);
+	if (wrapped != nullptr)
+	{
+		return wrapped->_shapeHandle.get();
+	}
 	return gcnew UnmanagedBorrowedShape(shape);
 }

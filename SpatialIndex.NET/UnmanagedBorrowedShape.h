@@ -11,14 +11,20 @@ namespace Konscious
 			private ref class UnmanagedBorrowedShape : IShape
 			{
 			public:
-				UnmanagedBorrowedShape(::SpatialIndex::IShape *realShape);
+				UnmanagedBorrowedShape(const ::SpatialIndex::IShape *realShape);
 				~UnmanagedBorrowedShape();
+
+				virtual property Region ^BoundingRegion
+				{
+					Region ^get() override;
+				}
 
 			internal:
 				virtual ::SpatialIndex::IShape *getShape() override;
+				virtual unsigned int dimensions() override;
 
 			private:
-				::SpatialIndex::IShape *_shape;
+				const ::SpatialIndex::IShape *_shape;
 			};
 		}
 	}

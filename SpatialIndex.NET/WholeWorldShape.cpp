@@ -30,9 +30,17 @@ bool WholeWorldShape::touchesShape(const ::SpatialIndex::IShape& in) const
 
 void WholeWorldShape::getCenter(::SpatialIndex::Point& out) const
 {
-	double *point = (double*)alloca(_dimensions * sizeof(double));
+	double *point = (double*)_malloca(_dimensions * sizeof(double));
+	if (point == nullptr)
+	{
+		throw gcnew System::OutOfMemoryException();
+	}
+
 	for (int i = 0; i < _dimensions; ++i)
+	{
 		point[i] = 0;
+	}
+
 	out = ::SpatialIndex::Point(point, _dimensions);
 }
 
@@ -43,9 +51,15 @@ uint32_t WholeWorldShape::getDimension() const
 
 void WholeWorldShape::getMBR(::SpatialIndex::Region& out) const
 {
-	double *pointlow = (double*)alloca(_dimensions * sizeof(double));
-	double *pointhigh = (double*)alloca(_dimensions * sizeof(double));
+	double *pointlow = (double*)_malloca(_dimensions * sizeof(double));
+	double *pointhigh = (double*)_malloca(_dimensions * sizeof(double));
 	
+	if (pointlow == nullptr || pointhigh == nullptr)
+	{
+		throw gcnew System::OutOfMemoryException();
+	}
+
+
 	for (int i = 0; i < _dimensions; ++i)
 	{
 		pointlow[i] = DBL_MIN;

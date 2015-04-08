@@ -8,6 +8,8 @@ namespace Konscious
 {
 	namespace SpatialIndex
 	{
+		ref class Region;
+
 		/// <summary>A pseudo-interface representing a geometric shape</summary>
 		public ref class IShape abstract : System::IDisposable
 		{
@@ -21,8 +23,14 @@ namespace Konscious
 				void set(System::Int64);
 			}
 
+			virtual property Region ^BoundingRegion
+			{
+				virtual Region ^get() = 0;
+			}
+
 		internal:
 			virtual ::SpatialIndex::IShape *getShape() = 0;
+			virtual unsigned int dimensions() = 0;
 
 		private:
 			int64_t _id;

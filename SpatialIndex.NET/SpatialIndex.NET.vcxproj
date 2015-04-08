@@ -67,7 +67,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_AVALARA_SPATIAL_BUILD;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SolutionDir)\libspatialindex\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -94,9 +94,14 @@
     <ClInclude Include="ISpatialIndex.h" />
     <ClInclude Include="IStorageManager.h" />
     <ClInclude Include="ListConstructionVisitor.h" />
+    <ClInclude Include="IManagedShapeBase.h" />
+    <ClInclude Include="ManagedShapeWrapper.h" />
     <ClInclude Include="ManagedStorageManagerWrapper.h" />
+    <ClInclude Include="Point.h" />
+    <ClInclude Include="Region.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="IManagedStorageManager.h" />
+    <ClInclude Include="RTree.h" />
     <ClInclude Include="SpatialIndexException.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="UnmanagedBorrowedShape.h" />
@@ -112,7 +117,12 @@
     <ClCompile Include="IStorageManager.cpp" />
     <ClCompile Include="IManagedStorageManager.cpp" />
     <ClCompile Include="ListConstructionVisitor.cpp" />
+    <ClCompile Include="IManagedShapeBase.cpp" />
+    <ClCompile Include="ManagedShapeWrapper.cpp" />
     <ClCompile Include="ManagedStorageManagerWrapper.cpp" />
+    <ClCompile Include="Point.cpp" />
+    <ClCompile Include="Region.cpp" />
+    <ClCompile Include="RTree.cpp" />
     <ClCompile Include="SpatialIndexException.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

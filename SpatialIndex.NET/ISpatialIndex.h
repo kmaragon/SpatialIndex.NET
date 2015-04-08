@@ -69,9 +69,9 @@ namespace Konscious
 		internal:
 			virtual ::SpatialIndex::ISpatialIndex *createRealIndex(::SpatialIndex::IStorageManager *manager) = 0;
 			virtual int dimensions() = 0;
+			::SpatialIndex::ISpatialIndex *getIndex();
 
 		private:
-			::SpatialIndex::ISpatialIndex *getIndex();
 
 			IStorageManager ^_manager;
 			::SpatialIndex::ISpatialIndex *_realIndex;

@@ -25,8 +25,7 @@ namespace Konscious
 				virtual void getMBR(::SpatialIndex::Region& out) const;
 				virtual double getArea() const;
 				virtual double getMinimumDistance(const IShape& in) const;
-
-
+				
 				virtual uint32_t getByteArraySize();
 				virtual void loadFromByteArray(const byte* data);
 				virtual void storeToByteArray(byte** data, uint32_t& length);

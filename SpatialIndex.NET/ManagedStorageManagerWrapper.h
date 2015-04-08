@@ -27,7 +27,7 @@ namespace Konscious
 				~ManagedStorageManagerWrapper();
 
 			private:
-				msclr::auto_gcroot<IManagedStorageManager ^> managerHandle;
+				msclr::auto_gcroot<IManagedStorageManager ^> _managerHandle;
 			};
 
 		}

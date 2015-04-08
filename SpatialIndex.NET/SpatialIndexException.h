@@ -5,6 +5,7 @@ namespace Konscious
 {
 	namespace SpatialIndex
 	{
+		[ System::SerializableAttribute ]
 		public ref class SpatialIndexException : System::Exception
 		{
 		public:

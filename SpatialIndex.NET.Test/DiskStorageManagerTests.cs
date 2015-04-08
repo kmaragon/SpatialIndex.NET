@@ -1,11 +1,9 @@
 ﻿using System.IO;
 using System.Linq;
-using Konscious.SpatialIndex;
-using Konscious.SpatialIndex.Test;
-using SpatialIndex.NET.Test.Helpers;
+using Konscious.SpatialIndex.Test.Helpers;
 using Xunit;
 
-namespace SpatialIndex.NET.Test
+namespace Konscious.SpatialIndex.Test
 {
     [Trait("Type", "IntegrationTest")]
     [Trait("IntegrationLevel", "Component")]

@@ -7,12 +7,17 @@ using namespace Konscious::SpatialIndex::_native;
 
 ManagedStorageManagerWrapper::ManagedStorageManagerWrapper(gcroot<IManagedStorageManager ^> realManager)
 {
-	managerHandle.attach(realManager);
+	_managerHandle.attach(realManager);
+}
+
+ManagedStorageManagerWrapper::~ManagedStorageManagerWrapper()
+{
+	_managerHandle.release();
 }
 
 void ManagedStorageManagerWrapper::loadByteArray(const ::SpatialIndex::id_type id, uint32_t &len, byte **data)
 {
-	IManagedStorageManager ^manager = managerHandle.get();
+	IManagedStorageManager ^manager = _managerHandle.get();
 
 	auto response = manager->Load(id);
 	auto bytes = new byte[response->Length];
@@ -26,7 +31,7 @@ void ManagedStorageManagerWrapper::loadByteArray(const ::SpatialIndex::id_type i
 
 void ManagedStorageManagerWrapper::storeByteArray(::SpatialIndex::id_type &id, const uint32_t len, const byte *const const_data)
 {
-	IManagedStorageManager ^manager = managerHandle.get();
+	IManagedStorageManager ^manager = _managerHandle.get();
 
 	auto dataarray = gcnew cli::array<byte>(len);
 	for (uint32_t i = 0; i < len; ++i)
@@ -40,17 +45,12 @@ void ManagedStorageManagerWrapper::storeByteArray(::SpatialIndex::id_type &id, c
 
 void ManagedStorageManagerWrapper::deleteByteArray(const ::SpatialIndex::id_type id)
 {
-	IManagedStorageManager ^manager = managerHandle.get();
+	IManagedStorageManager ^manager = _managerHandle.get();
 	manager->Delete(id);
 }
 
 void ManagedStorageManagerWrapper::flush()
 {
-	IManagedStorageManager ^manager = managerHandle.get();
+	IManagedStorageManager ^manager = _managerHandle.get();
 	manager->Flush();
-}
-
-ManagedStorageManagerWrapper::~ManagedStorageManagerWrapper()
-{
-	managerHandle.release();
 }

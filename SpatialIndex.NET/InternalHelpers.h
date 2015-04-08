@@ -15,7 +15,7 @@ namespace Konscious
 
 				static System::Collections::Generic::KeyValuePair<IShape ^, array<byte> ^> pairFromData(const ::SpatialIndex::IData &in);
 
-				static IShape ^getManagedFromNative(::SpatialIndex::IShape *shape);
+				static IShape ^getManagedFromNative(const ::SpatialIndex::IShape *shape);
 			};
 		}
 	}
