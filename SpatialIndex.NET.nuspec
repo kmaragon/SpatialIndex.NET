@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>SpatialIndex.NET</id>
+    <version>1.0.0.0</version>
+    <authors>Keef Aragon</authors>
+    <owners>Keef Aragon</owners>
+    <summary>.NET bindings for libspatialindex</summary>
+    <description>A library providing x86-64 .NET bindings for libspatialindex.</description>
+    <tags>rtree libspatialindex spatial</tags>
+  </metadata>
+  <files>
+    <file src="x64/Release/SpatialIndex.NET.dll" target="lib/net45/SpatialIndex64.dll" />
+  </files>
+</package>
