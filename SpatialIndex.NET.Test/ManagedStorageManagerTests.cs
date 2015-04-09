@@ -6,8 +6,7 @@ using Xunit;
 
 namespace Konscious.SpatialIndex.Test
 {
-    [Trait("Type", "IntegrationTest")]
-    [Trait("IntegrationLevel", "Component")]
+    [Trait("Type", "UnitTest")]
     public class ManagedStorageManagerTests
     {
         [Fact]
