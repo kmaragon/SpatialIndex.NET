@@ -2,9 +2,12 @@
 <package >
   <metadata>
     <id>SpatialIndex.NET</id>
-    <version>1.0.0.0</version>
+    <version>0.1.0.0</version>
     <authors>Keef Aragon</authors>
     <owners>Keef Aragon</owners>
+    <copyright>Copyright (c) 2015 Keef Aragon</copyright>
+    <projectUrl>https://github.com/kmaragon/SpatialIndex.NET</projectUrl>
+    <licenseUrl>https://github.com/kmaragon/SpatialIndex.NET/blob/master/LICENSE</licenseUrl>
     <summary>.NET bindings for libspatialindex</summary>
     <description>A library providing x86-64 .NET bindings for libspatialindex.</description>
     <tags>rtree libspatialindex spatial</tags>
