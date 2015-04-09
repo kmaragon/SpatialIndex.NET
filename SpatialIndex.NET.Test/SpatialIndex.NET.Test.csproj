@@ -50,6 +50,7 @@
     <Compile Include="Implementations\Circle.cs" />
     <Compile Include="Implementations\ManagedMemoryStorageManager.cs" />
     <Compile Include="ManagedStorageManagerTests.cs" />
+    <Compile Include="MemoryStorageManagerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RTreeTests.cs" />
     <Compile Include="SelfTests\CircleTests.cs" />

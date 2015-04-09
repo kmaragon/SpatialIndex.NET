@@ -1,14 +1,11 @@
 ﻿using System.Linq;
 using System.Text;
-using System.Xml.Schema;
-using Konscious.SpatialIndex.Test.Helpers;
 using Konscious.SpatialIndex.Test.Implementations;
 using Xunit;
 
 namespace Konscious.SpatialIndex.Test
 {
-    [Trait("Type", "IntegrationTest")]
-    [Trait("IntegrationLevel", "Component")]
+    [Trait("Type", "UnitTest")]
     public class RTreeTests
     {
         [Fact]
