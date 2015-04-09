@@ -15,6 +15,11 @@ namespace Konscious.SpatialIndex.Test.Implementations
                 throw new ArgumentException("Circle only supports 2 dimensions", "center");
             }
 
+            if (radius < 0)
+            {
+                throw new ArgumentException("Radius must be positive", "radius");
+            }
+
             _center = center;
             _radius = radius;
             _radiusSquared = radius*radius;
@@ -86,72 +91,215 @@ namespace Konscious.SpatialIndex.Test.Implementations
 
         public override bool Intersects(IShape @in)
         {
-            var boundingBox = @in.BoundingRegion;
-            if (boundingBox.Minimum.Coordinates[0] <= _center.Coordinates[0])
+            var box = @in.BoundingRegion;
+
+            // is the box just not crossing between the min and max boundaries of the circle?
+            if (box.Maximum.Coordinates[0] <= (_center.Coordinates[0] - _radius))
+                return false;
+            if (box.Minimum.Coordinates[0] >= (_center.Coordinates[0] + _radius))
+                return false;
+            
+            if (box.Maximum.Coordinates[1] <= (_center.Coordinates[1] - _radius))
+                return false;
+            if (box.Minimum.Coordinates[1] >= (_center.Coordinates[1] + _radius))
+                return false;
+
+            if (box.Minimum.Coordinates[0] <= _center.Coordinates[0])
             {
-                // is the right most point of the shape left of the circle?
-                if (boundingBox.Maximum.Coordinates[0] < (_center.Coordinates[0] - _radius))
-                    return false;
+                // check if the rect x crosses over the peak of the circle
+                if (box.Maximum.Coordinates[0] >= _center.Coordinates[0])
+                    return true;
 
-                // @in is to the left of the circle's center but still horizontally crosses
-                if (boundingBox.Minimum.Coordinates[1] <= _center.Coordinates[1])
+                if (box.Minimum.Coordinates[1] <= _center.Coordinates[1])
                 {
-                    // see if the shape's bottom edge is still above the circle's top
-                    if (boundingBox.Maximum.Coordinates[1] < (_center.Coordinates[1] - _radius))
-                        return false;
-
-                    // do we span accross the center of the circle, vertically?
-                    if (boundingBox.Maximum.Coordinates[1] >= _center.Coordinates[1])
+                    // check if rect y crosses over the circle's peak
+                    if (box.Maximum.Coordinates[1] >= _center.Coordinates[1])
                         return true;
 
-                    // we are crossing vertically - if the rectangle horizontally spans
-                    // the circle, we still have a match
-                    if (boundingBox.Maximum.Coordinates[0] >= _center.Coordinates[0])
-                        return true;
-                    
-                    // last option: check the bottom right of the rectangle
+                    // the rect is in circle's first local quadrant
                     var squares = GetSquares(@in);
 
-                    // see if the bottom right is within the radius
-                    if ((squares.RightSquared + squares.BottomSquared) > _radiusSquared)
-                    {
-                        return false;
-                    }
-
-                    return true;
+                    // bottom right
+                    return ((squares.RightSquared + squares.BottomSquared) < _radiusSquared);
                 }
-
-                // so here, the rectangle is still to the left of the circle's x=0 but the top is
-                // in the bottom half somewhere
-
-                // See if the rectangle is beyond the circle in general
-                if (boundingBox.Minimum.Coordinates[1] > (_center.Coordinates[1] + _radius))
+                else
                 {
-                    return false;
+                    // the rect is in circle's third local quadrant
+                    var squares = GetSquares(@in);
+
+                    // top right
+                    return ((squares.RightSquared + squares.TopSquared) < _radiusSquared);
                 }
 
-                // so if we horizontally span the circle's center, we'll still cross the long point
-                if (boundingBox.Maximum.Coordinates[0] >= _center.Coordinates[0])
+            }
+
+            if (box.Minimum.Coordinates[1] <= _center.Coordinates[1])
+            {
+                // still if we vertically cross the center, we're good
+                if (box.Maximum.Coordinates[1] >= _center.Coordinates[1])
                     return true;
 
-                // if not, we have a block to the bottom left of the circle's center.
-                    
+                // the rect is in circle's second local quadrant
+                var squares = GetSquares(@in);
+
+                // bottom left
+                return ((squares.LeftSquared + squares.BottomSquared) < _radiusSquared);
             }
-            
-            if (boundingBox.Minimum.Coordinates[0] > (_center.Coordinates[0] + _radius))
+            else
             {
-                return false;
+                // fourth quadrant - top left
+                var squares = GetSquares(@in);
+
+                // bottom left
+                return ((squares.LeftSquared + squares.TopSquared) < _radiusSquared);
             }
         }
 
         public override double MinimumDistanceFrom(IShape @in)
         {
-            throw new NotImplementedException();
+            var box = @in.BoundingRegion;
+
+            // is the box just not crossing between the min and max boundaries of the circles
+            if (box.Minimum.Coordinates[0] <= _center.Coordinates[0])
+            {
+                // check if the rect x crosses over the peak of the circle
+                if (box.Maximum.Coordinates[0] >= _center.Coordinates[0])
+                {
+                    // @in horizontally spans he circle's closest point
+                    if (box.Maximum.Coordinates[1] <= (_center.Coordinates[1] - _radius))
+                        return (_center.Coordinates[1] - _radius) - box.Maximum.Coordinates[1];
+                    if (box.Minimum.Coordinates[1] >= (_center.Coordinates[1] + _radius))
+                        return box.Minimum.Coordinates[1] - (_center.Coordinates[1] + _radius);
+                    return 0.0;
+                }
+
+                if (box.Minimum.Coordinates[1] <= _center.Coordinates[1])
+                {
+                    // check if rect y crosses over the circle's peak
+                    if (box.Maximum.Coordinates[1] >= _center.Coordinates[1])
+                    {
+                        // @in vertically spans the circle's closest point
+                        if (box.Maximum.Coordinates[0] <= (_center.Coordinates[0] - _radius))
+                            return (_center.Coordinates[0] - _radius) - box.Maximum.Coordinates[0];
+                        if (box.Minimum.Coordinates[0] >= (_center.Coordinates[0] + _radius))
+                            return box.Minimum.Coordinates[0] - (_center.Coordinates[0] + _radius);
+
+                        // the circle intersects
+                        return 0.0;
+                    }
+
+                    // the rect is in circle's first local quadrant
+                    var squares = GetSquares(@in);
+
+                    // check for intersection
+                    var osquared = squares.RightSquared + squares.BottomSquared;
+                    if (osquared <= _radiusSquared)
+                        return 0.0;
+
+                    // get the distance from the bottom to the circle
+                    return Math.Sqrt(osquared - _radiusSquared);
+                }
+                else
+                {
+                    // the rect is in circle's third local quadrant
+                    var squares = GetSquares(@in);
+
+                    // top right
+                    var osquared = squares.RightSquared + squares.TopSquared;
+                    if (osquared <= _radiusSquared)
+                        return 0.0;
+
+                    return Math.Sqrt(osquared - _radiusSquared);
+                }
+
+            }
+
+            if (box.Minimum.Coordinates[1] <= _center.Coordinates[1])
+            {
+                // still if we vertically cross the center, we're good
+                if (box.Maximum.Coordinates[1] >= _center.Coordinates[1])
+                {
+                    // @in vertically spans the circle's closest point
+                    if (box.Maximum.Coordinates[0] <= (_center.Coordinates[0] - _radius))
+                        return (_center.Coordinates[0] - _radius) - box.Maximum.Coordinates[0];
+                    if (box.Minimum.Coordinates[0] >= (_center.Coordinates[0] + _radius))
+                        return box.Minimum.Coordinates[0] - (_center.Coordinates[0] + _radius);
+                }
+
+                // the rect is in circle's second local quadrant
+                var squares = GetSquares(@in);
+
+                // bottom left
+                var osquared = squares.LeftSquared + squares.BottomSquared;
+                if (osquared <= _radiusSquared)
+                    return 0.0;
+
+                return Math.Sqrt(osquared - _radiusSquared);
+            }
+            else
+            {
+                // fourth quadrant - top left
+                var squares = GetSquares(@in);
+
+                // bottom left
+                var osquared = squares.LeftSquared + squares.TopSquared;
+                if (osquared <= _radiusSquared)
+                    return 0.0;
+
+                return Math.Sqrt(osquared - _radiusSquared);
+            }
         }
 
         public override bool Touches(IShape @in)
         {
-            throw new NotImplementedException();
+            // this is the same thing as intersect but with <= instead of <
+            var box = @in.BoundingRegion;
+
+            // is the box just not crossing between the min and max boundaries of the circle?
+            if (box.Maximum.Coordinates[0] < (_center.Coordinates[0] - _radius))
+                return false;
+            if (box.Minimum.Coordinates[0] > (_center.Coordinates[0] + _radius))
+                return false;
+
+            if (box.Maximum.Coordinates[1] < (_center.Coordinates[1] - _radius))
+                return false;
+            if (box.Minimum.Coordinates[1] > (_center.Coordinates[1] + _radius))
+                return false;
+
+            if (box.Minimum.Coordinates[0] <= _center.Coordinates[0])
+            {
+                if (box.Maximum.Coordinates[0] >= _center.Coordinates[0])
+                    return true;
+
+                if (box.Minimum.Coordinates[1] <= _center.Coordinates[1])
+                {
+                    if (box.Maximum.Coordinates[1] >= _center.Coordinates[1])
+                        return true;
+
+                    var squares = GetSquares(@in);
+                    return ((squares.RightSquared + squares.BottomSquared) <= _radiusSquared);
+                }
+                else
+                {
+                    var squares = GetSquares(@in);
+                    return ((squares.RightSquared + squares.TopSquared) <= _radiusSquared);
+                }
+
+            }
+
+            if (box.Minimum.Coordinates[1] <= _center.Coordinates[1])
+            {
+                if (box.Maximum.Coordinates[1] >= _center.Coordinates[1])
+                    return true;
+
+                var squares = GetSquares(@in);
+                return ((squares.LeftSquared + squares.BottomSquared) <= _radiusSquared);
+            }
+            else
+            {
+                var squares = GetSquares(@in);
+                return ((squares.LeftSquared + squares.TopSquared) <= _radiusSquared);
+            }
         }
 
         private CachedSquares GetSquares(IShape @in)

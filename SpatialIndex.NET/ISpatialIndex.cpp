@@ -96,7 +96,7 @@ IEnumerator<KeyValuePair<IShape ^, array<byte> ^>> ^ISpatialIndex::GetEnumerator
 {
 	ListConstructionVisitor visitor;
 	WholeWorldShape scan(dimensions());
-	getIndex()->selfJoinQuery(scan, visitor);
+	getIndex()->intersectsWithQuery(scan, visitor);
 
 	return visitor.Data()->GetEnumerator();
 }

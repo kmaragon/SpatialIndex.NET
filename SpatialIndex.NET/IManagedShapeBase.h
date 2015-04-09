@@ -44,6 +44,7 @@ namespace Konscious
 				virtual System::Double get() = 0;
 			}
 
+			[System::Security::Permissions::SecurityPermission(System::Security::Permissions::SecurityAction::LinkDemand, Flags = System::Security::Permissions::SecurityPermissionFlag::SerializationFormatter)]
 			virtual void GetObjectData(System::Runtime::Serialization::SerializationInfo ^info, System::Runtime::Serialization::StreamingContext context) = 0;
 			
 		internal:
