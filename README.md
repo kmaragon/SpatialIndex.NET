@@ -1,6 +1,8 @@
 # SpatialIndex.NET
 A library providing .NET bindings for libspatialindex
 
+* NOTE: This is about to undergo a facelift to be more like a dictionary *
+
 ## Getting Started
 1. Install the NuGet package
 2. Add a reference to SpatialIndex.NET
