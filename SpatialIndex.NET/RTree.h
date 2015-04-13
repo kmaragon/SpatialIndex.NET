@@ -18,7 +18,7 @@ namespace Konscious
 		};
 
 		/// <summary>A set of options to tweak R-Tree construction</summary>
-		public ref class RTreeOptions
+		public ref class RTreeOptions sealed
 		{
 		public:
 			/// <summary>A constant value for IndexIdentifier to indicate that a new index should be created</summary>
@@ -36,6 +36,9 @@ namespace Konscious
 			/// </remarks>
 			/// <param name="indexIdentifier">The id of the index that this RTree uses</param>
 			RTreeOptions(System::Int64 indexIdentifier);
+
+			/// <summary>Disposer</summary>
+			!RTreeOptions();
 
 			/// <summary>Destructor</summary>
 			~RTreeOptions();
@@ -157,6 +160,12 @@ namespace Konscious
 			/// <param name="manager">The storage manager that will store the tree</param>
 			RTree(RTreeOptions ^initOptions, IStorageManager ^manager);
 			
+			/// <summary>Disposer</summary>
+			!RTree();
+
+			/// <summary>Destructor</summary>
+			~RTree();
+
 			/// The options that are used in this RTree</summary>
 			property RTreeOptions ^Options
 			{

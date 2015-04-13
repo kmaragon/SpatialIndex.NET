@@ -24,13 +24,19 @@ ISpatialIndex<TValue>::ISpatialIndex(IStorageManager ^manager)
 }
 
 generic<typename TValue>
-ISpatialIndex<TValue>::~ISpatialIndex()
+ISpatialIndex<TValue>::!ISpatialIndex()
 {
 	if (_realIndex != nullptr)
 	{
 		delete _realIndex;
 		_realIndex = nullptr;
 	}
+}
+
+generic<typename TValue>
+ISpatialIndex<TValue>::~ISpatialIndex()
+{
+	this->!ISpatialIndex();
 }
 
 generic<typename TValue>

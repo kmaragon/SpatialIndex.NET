@@ -18,11 +18,17 @@ IStorageManager::IStorageManager() :
 	return _unmanagedObject;
 }
 
-IStorageManager::~IStorageManager()
+IStorageManager::!IStorageManager()
 {
 	if (_unmanagedObject != nullptr)
 	{
 		_unmanagedObject->flush();
 		delete _unmanagedObject;
+		_unmanagedObject = nullptr;
 	}
+}
+
+IStorageManager::~IStorageManager()
+{
+	this->!IStorageManager();
 }

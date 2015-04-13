@@ -45,9 +45,15 @@ Region ^Point::BoundingRegion::get()
 	return gcnew Region(this, this);
 }
 
-Point::~Point()
+Point::!Point()
 {
 	delete _point;
+	_point = nullptr;
+}
+
+Point::~Point()
+{
+	this->!Point();
 }
 
 Point::Point(::SpatialIndex::Point *point)

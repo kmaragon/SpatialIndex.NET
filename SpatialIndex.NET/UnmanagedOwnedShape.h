@@ -12,6 +12,8 @@ namespace Konscious
 			{
 			public:
 				UnmanagedOwnedShape(const ::SpatialIndex::IShape *realShape);
+
+				!UnmanagedOwnedShape();
 				~UnmanagedOwnedShape();
 
 				virtual property Region ^BoundingRegion

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using Konscious.SpatialIndex.Test.Helpers;
 using Konscious.SpatialIndex.Test.Implementations;
@@ -6,6 +7,8 @@ using Xunit;
 
 namespace Konscious.SpatialIndex.Test
 {
+    [Trait("Type", "IntegrationTest")]
+    [Trait("IntegrationLevel", "Component")]
     public class RTreeIntegrationTests
     {
         [Fact]
@@ -72,6 +75,48 @@ namespace Konscious.SpatialIndex.Test
             }
         }
 
+        [Fact]
+        public void DoABunchOfStuff()
+        {
+            // create the new storage manager
+            using (var storageManager = new MemoryStorageManager())
+            {
+                var options = new RTreeOptions()
+                {
+                    Dimensions = 2,
+                    EnsureTightMBRs = true,
+                    TreeVariant = RTreeVariant.RStar,
+                    FillFactor = 0.9
+                };
+
+                var rand = new Random();
+                using (var rtree = new RTree<byte[]>(options, storageManager))
+                {
+                    for (int i = 0; i < 10000; ++i)
+                    {
+                        if (rand.Next()%2 != 0)
+                        {
+                            using (var randinsert = new Circle(new Point(rand.NextDouble(), rand.NextDouble()), rand.NextDouble()))
+                            {
+                                rtree.Add(randinsert, DataHelpers.GenerateSomeBytes(rand.Next()));
+                            }
+                        }
+                        else
+                        {
+                            using (var regioninsert = new Region(new[] {rand.NextDouble(), rand.NextDouble()}, new[] {rand.NextDouble(), rand.NextDouble()}))
+                            {
+                                rtree.Add(regioninsert, DataHelpers.GenerateSomeBytes(rand.Next()));
+                            }
+                        }
+                    }
+
+                    // sanity check
+                    Assert.Equal(10000, rtree.Count());
+
+                    Assert.True(rtree.IntersectsWith(new Point(rand.NextDouble(), rand.NextDouble())).Count() <= 10000);
+                }
+            }
+        }
 
         [Fact]
         public void RTreeCustomShapesCanBeRecycled()

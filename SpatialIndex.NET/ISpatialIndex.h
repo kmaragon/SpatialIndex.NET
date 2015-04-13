@@ -21,6 +21,9 @@ namespace Konscious
 			/// <summary>Construct the index with the specified storage manager</summary>
 			ISpatialIndex(IStorageManager ^manager);
 
+			/// <summary>Disposer</summary>
+			!ISpatialIndex();
+
 			/// <summary>Destructor</summary>
 			virtual ~ISpatialIndex();
 

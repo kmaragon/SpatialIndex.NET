@@ -12,6 +12,8 @@ namespace Konscious
 		public:
 			Region(cli::array<double> ^min, cli::array<double> ^max);
 			Region(Point ^min, Point ^max);
+
+			!Region();
 			virtual ~Region();
 
 			property Point ^Minimum

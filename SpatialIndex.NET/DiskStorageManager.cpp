@@ -15,9 +15,15 @@ DiskStorageManager::DiskStorageManager(String ^filename)
 	this->Filename = filename;
 }
 
-DiskStorageManager::~DiskStorageManager()
+DiskStorageManager::!DiskStorageManager()
 {
 	delete _props;
+	_props = nullptr;
+}
+
+DiskStorageManager::~DiskStorageManager()
+{
+	this->!DiskStorageManager();
 }
 
 #define CheckInitialized() \

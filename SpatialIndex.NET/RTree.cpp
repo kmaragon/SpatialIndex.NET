@@ -31,9 +31,15 @@ RTreeOptions::RTreeOptions(System::Int64 indexIdentifier)
 		IndexIdentifier = indexIdentifier;
 }
 
-RTreeOptions::~RTreeOptions()
+RTreeOptions::!RTreeOptions()
 {
 	delete _set;
+	_set = nullptr;
+}
+
+RTreeOptions::~RTreeOptions()
+{
+	this->!RTreeOptions();
 }
 
 double RTreeOptions::FillFactor::get()
@@ -270,7 +276,32 @@ generic<typename TValue>
 RTree<TValue>::RTree(RTreeOptions ^initOptions, IStorageManager ^manager)
 	: ISpatialIndex(manager)
 {
-	_options = initOptions;
+	_options = gcnew RTreeOptions();
+	
+	byte *copyTo;
+	uint32_t len;
+	initOptions->_set->storeToByteArray(&copyTo, len);
+	try
+	{
+		_options->_set->loadFromByteArray(copyTo);
+	}
+	finally
+	{
+		delete copyTo;
+	}
+}
+
+generic<typename TValue>
+RTree<TValue>::!RTree()
+{
+	delete _options;
+	_options = nullptr;
+}
+
+generic<typename TValue>
+RTree<TValue>::~RTree()
+{
+	this->!RTree();
 }
 
 generic<typename TValue>

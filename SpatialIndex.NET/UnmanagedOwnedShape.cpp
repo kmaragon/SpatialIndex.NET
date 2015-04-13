@@ -10,9 +10,15 @@ UnmanagedOwnedShape::UnmanagedOwnedShape(const ::SpatialIndex::IShape *realShape
 	_shape = realShape;
 }
 
-UnmanagedOwnedShape::~UnmanagedOwnedShape()
+UnmanagedOwnedShape::!UnmanagedOwnedShape()
 {
 	delete _shape;
+	_shape = nullptr;
+}
+
+UnmanagedOwnedShape::~UnmanagedOwnedShape()
+{
+	this->!UnmanagedOwnedShape();
 }
 
 Region ^UnmanagedOwnedShape::BoundingRegion::get()

@@ -20,6 +20,9 @@ namespace Konscious
 			/// <summary>Constructor</summary>
 			IStorageManager();
 
+			/// <summary>Disposer</summary>
+			!IStorageManager();
+
 			/// <summary>Clean up the native stuff</summary>
 			virtual ~IStorageManager();
 

@@ -16,9 +16,15 @@ IManagedShapeBase::IManagedShapeBase(SerializationInfo ^info, StreamingContext c
 	// nothing to deserialize in the abstract base
 }
 
-IManagedShapeBase::~IManagedShapeBase()
+IManagedShapeBase::!IManagedShapeBase()
 {
 	delete _wrapped;
+	_wrapped = nullptr;
+}
+
+IManagedShapeBase::~IManagedShapeBase()
+{
+	this->!IManagedShapeBase();
 }
 
 ::SpatialIndex::IShape *IManagedShapeBase::getShape()

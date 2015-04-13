@@ -12,6 +12,7 @@ namespace Konscious
 		public:
 			Point(... cli::array<double> ^coords);
 
+			!Point();
 			~Point();
 
 			property cli::array<double> ^Coordinates

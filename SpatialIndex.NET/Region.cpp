@@ -23,11 +23,16 @@ Region::Region(Point ^min, Point ^max)
 	_region = new ::SpatialIndex::Region(*min->_point, *max->_point);
 }
 
-Region::~Region()
+Region::!Region()
 {
 	delete _region;
+	_region = nullptr;
 }
 
+Region::~Region()
+{
+	this->!Region();
+}
 
 Point ^Region::Minimum::get()
 {
