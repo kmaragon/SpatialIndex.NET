@@ -21,8 +21,24 @@ namespace Konscious
 		public ref class RTreeOptions
 		{
 		public:
+			/// <summary>A constant value for IndexIdentifier to indicate that a new index should be created</summary>
+			static const System::Int64 NewIndex = 0x8000000000000000L;
+
 			/// <summary>Default Constructor</summary>
 			RTreeOptions();
+
+			/// <summary>Construct an RTree with an index identifier</summary>
+			/// <remarks>
+			/// StorageManagers can contain multiple Spatial Indexes. Each one has an identifier.
+			/// This parameter specifies the index to use from the storage manager. If the manager
+			/// already contains the tree with the index, it will be loaded from the existing slot
+			/// in storage. If it's new, this will specify the identifier for getting the tree later
+			/// </remarks>
+			/// <param name="indexIdentifier">The id of the index that this RTree uses</param>
+			RTreeOptions(System::Int64 indexIdentifier);
+
+			/// <summary>Destructor</summary>
+			~RTreeOptions();
 
 			/// <summary>What ratio of pages should be filled with entries</summary>
 			/// <remarks>
@@ -123,6 +139,7 @@ namespace Konscious
 
 			static bool getOption(::Tools::PropertySet &props, const char *option, bool defaultValue);
 			static unsigned int getOption(::Tools::PropertySet &props, const char *option, unsigned int defaultValue);
+			static int getOption(::Tools::PropertySet &props, const char *option, int defaultValue);
 			static double getOption(::Tools::PropertySet &props, const char *option, double defaultValue);
 			static System::Int64 getOption(::Tools::PropertySet &props, const char *option, System::Int64 defaultValue);
 
@@ -131,14 +148,15 @@ namespace Konscious
 		};
 
 		/// <summary>RTree implementation of an ISpatialIndex</summary>
-		public ref class RTree : ISpatialIndex
+		generic<typename TValue>
+		public ref class RTree : ISpatialIndex<TValue>
 		{
 		public:
 			/// <summary>Construct an RTree</summary>
 			/// <param name="initOption">The options with which to construct the tree</param>
 			/// <param name="manager">The storage manager that will store the tree</param>
 			RTree(RTreeOptions ^initOptions, IStorageManager ^manager);
-
+			
 			/// The options that are used in this RTree</summary>
 			property RTreeOptions ^Options
 			{

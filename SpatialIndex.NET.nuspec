@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SpatialIndex.NET</id>
-    <version>0.1.0.0</version>
+    <version>0.1.0.4</version>
     <authors>Keef Aragon</authors>
     <owners>Keef Aragon</owners>
     <copyright>Copyright (c) 2015 Keef Aragon</copyright>
@@ -11,8 +11,13 @@
     <summary>.NET bindings for libspatialindex</summary>
     <description>A library providing x86-64 .NET bindings for libspatialindex.</description>
     <tags>rtree libspatialindex spatial</tags>
+    <references>
+      <reference file="SpatialIndex.NET.dll" />
+    </references>
   </metadata>
   <files>
-    <file src="x64/Release/SpatialIndex.NET.dll" target="lib/net45/SpatialIndex64.dll" />
+    <file src="x64/Release/SpatialIndex.NET.dll" target="lib/net45/SpatialIndex.NET.dll" />
+    <file src="libspatialindex/bin/spatialindex-64.dll" target="lib/net45" />
+    <file src="libspatialindex/bin/spatialindex-64.dll" target="content" />
   </files>
 </package>

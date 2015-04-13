@@ -1,9 +1,7 @@
 #include "stdafx.h"
 #include "IShape.h"
-#include "UnmanagedBorrowedShape.h"
 
 using namespace Konscious::SpatialIndex;
-using namespace Konscious::SpatialIndex::_shapes;
 using namespace System;
 
 IShape::IShape()

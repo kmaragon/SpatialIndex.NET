@@ -20,8 +20,9 @@ IStorageManager::IStorageManager() :
 
 IStorageManager::~IStorageManager()
 {
-	if (_unmanagedObject == nullptr)
+	if (_unmanagedObject != nullptr)
 	{
+		_unmanagedObject->flush();
 		delete _unmanagedObject;
 	}
 }

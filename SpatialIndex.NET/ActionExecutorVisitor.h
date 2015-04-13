@@ -5,6 +5,7 @@
 #pragma managed(pop)
 #include <vcclr.h>
 #include "IShape.h"
+#include "QueryWrappedVisitor.h"
 
 namespace Konscious
 {
@@ -12,19 +13,30 @@ namespace Konscious
 	{
 		namespace _visitors
 		{
-			class ActionExecutorVisitor : public ::SpatialIndex::IVisitor
+			class ActionExecutorVisitor : public QueryWrappedVisitor
 			{
 			public:
-				ActionExecutorVisitor(System::Action<IShape ^, array<byte> ^> ^action);
-				~ActionExecutorVisitor();
+				ActionExecutorVisitor(IShape ^query, System::Action<IShape ^, System::Object ^> ^action, FilterCallback ^filterCallback)
+					: QueryWrappedVisitor(query, filterCallback)
+				{
+					_action = action;
+				}
 
-				virtual void visitNode(const ::SpatialIndex::INode &in);
-				virtual void visitData(const ::SpatialIndex::IData &in);
-				virtual void visitData(std::vector<const ::SpatialIndex::IData*> &v);
+				~ActionExecutorVisitor()
+				{
+					delete _action;
+				}
+
+				virtual void handle(IShape ^key, System::Object ^value);
 
 			private:
-				gcroot<System::Action<IShape ^, cli::array<byte> ^> ^> _action;
+				gcroot<System::Action<IShape ^, System::Object ^> ^> _action;
 			};
+
+			void ActionExecutorVisitor::handle(IShape ^key, System::Object ^value)
+			{
+				_action->Invoke(key, value);
+			}
 		}
 	}
 }

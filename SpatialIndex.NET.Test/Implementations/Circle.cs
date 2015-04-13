@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Konscious.SpatialIndex.Test.Implementations
 {
+    [Serializable]
     public class Circle : IManagedShapeBase
     {
         public Circle(Point center, double radius)
@@ -23,6 +25,13 @@ namespace Konscious.SpatialIndex.Test.Implementations
             _center = center;
             _radius = radius;
             _radiusSquared = radius*radius;
+        }
+
+        protected Circle(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+        {
+            _center = new Point(info.GetInt32("CenterX"), info.GetInt32("CenterY"));
+            _radius = info.GetInt32("Radius");
+            _radiusSquared = _radius*_radius;
         }
 
         public override double Area

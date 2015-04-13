@@ -85,7 +85,7 @@
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
     </Reference>
-    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -95,12 +95,13 @@
     <ClInclude Include="IShape.h" />
     <ClInclude Include="ISpatialIndex.h" />
     <ClInclude Include="IStorageManager.h" />
-    <ClInclude Include="ListConstructionVisitor.h" />
     <ClInclude Include="IManagedShapeBase.h" />
+    <ClInclude Include="ListConstructionVisitor.h" />
     <ClInclude Include="ManagedShapeWrapper.h" />
     <ClInclude Include="ManagedStorageManagerWrapper.h" />
     <ClInclude Include="MemoryStorageManager.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="QueryWrappedVisitor.h" />
     <ClInclude Include="Region.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="IManagedStorageManager.h" />
@@ -108,18 +109,23 @@
     <ClInclude Include="SpatialIndexException.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="UnmanagedBorrowedShape.h" />
+    <ClInclude Include="UnmanagedOwnedShape.h" />
     <ClInclude Include="WholeWorldShape.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ActionExecutorVisitor.cpp" />
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="DiskStorageManager.cpp" />
+    <ClCompile Include="GlobalSuppressions.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="InternalHelpers.cpp" />
     <ClCompile Include="IShape.cpp" />
     <ClCompile Include="ISpatialIndex.cpp" />
     <ClCompile Include="IStorageManager.cpp" />
     <ClCompile Include="IManagedStorageManager.cpp" />
-    <ClCompile Include="ListConstructionVisitor.cpp" />
     <ClCompile Include="IManagedShapeBase.cpp" />
     <ClCompile Include="ManagedShapeWrapper.cpp" />
     <ClCompile Include="ManagedStorageManagerWrapper.cpp" />
@@ -133,6 +139,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="UnmanagedBorrowedShape.cpp" />
+    <ClCompile Include="UnmanagedOwnedShape.cpp" />
     <ClCompile Include="WholeWorldShape.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -12,8 +12,11 @@ namespace Konscious
 			{
 			public:
 				InternalHelpers();
+				
+				static System::Collections::Generic::KeyValuePair<IShape ^, Object ^> pairFromData(const ::SpatialIndex::IData &in);
 
-				static System::Collections::Generic::KeyValuePair<IShape ^, array<byte> ^> pairFromData(const ::SpatialIndex::IData &in);
+				generic<typename TValue>
+				static cli::array<System::Byte> ^dataFromPair(IShape ^shape, TValue value);
 
 				static IShape ^getManagedFromNative(const ::SpatialIndex::IShape *shape);
 			};
