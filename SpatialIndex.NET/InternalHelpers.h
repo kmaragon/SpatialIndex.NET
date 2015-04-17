@@ -20,6 +20,23 @@ namespace Konscious
 
 				static IShape ^getManagedFromNative(const ::SpatialIndex::IShape *shape);
 			};
+
+			class CountVisitor : public ::SpatialIndex::IVisitor
+			{
+			public:
+				CountVisitor();
+				~CountVisitor();
+
+				int getResultCount() const;
+
+			protected:
+				virtual void visitNode(const ::SpatialIndex::INode &in);
+				virtual void visitData(const ::SpatialIndex::IData &in);
+				virtual void visitData(std::vector<const ::SpatialIndex::IData*> &v);
+
+			private:
+				int _count;
+			};
 		}
 	}
 }

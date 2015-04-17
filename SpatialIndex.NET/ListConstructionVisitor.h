@@ -16,8 +16,8 @@ namespace Konscious
 			class ListConstructionVisitor : public QueryWrappedVisitor
 			{
 			public:
-				ListConstructionVisitor(IShape ^query, FilterCallback ^filterCallback) 
-					: QueryWrappedVisitor(query, filterCallback)
+				ListConstructionVisitor(IShape ^query)
+					: QueryWrappedVisitor(query, gcnew CreateSpatialDataCallback(&CreateDataAsObject))
 				{
 					_list = gcnew System::Collections::Generic::List<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^> >();
 				}
@@ -27,17 +27,23 @@ namespace Konscious
 					_list.release();
 				}
 
-				virtual void handle(IShape ^key, System::Object ^value);
+				virtual void handle(ISpatialIndexData ^value);
 
 				virtual System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^>> ^Data();
 
 			private:
+				static ISpatialIndexData ^CreateDataAsObject(const ::SpatialIndex::IData &in)
+				{
+					return gcnew SpatialIndexData<System::Object ^>(in);
+				}
+
 				msclr::auto_gcroot<System::Collections::Generic::List<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^>> ^> _list;
 			};
 
-			void ListConstructionVisitor::handle(IShape ^key, System::Object ^value)
+			void ListConstructionVisitor::handle(ISpatialIndexData ^value)
 			{
-				_list.get()->Add(System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^>(key, value));
+				auto objData = (SpatialIndexData<System::Object ^> ^)value;
+				_list.get()->Add(System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^>(objData->Shape, objData->Value));
 			}
 
 			System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^>> ^ListConstructionVisitor::Data()

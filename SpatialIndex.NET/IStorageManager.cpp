@@ -32,3 +32,8 @@ IStorageManager::~IStorageManager()
 {
 	this->!IStorageManager();
 }
+
+void IStorageManager::Flush()
+{
+	this->getManager()->flush();
+}

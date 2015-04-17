@@ -26,6 +26,9 @@ namespace Konscious
 			/// <summary>Clean up the native stuff</summary>
 			virtual ~IStorageManager();
 
+			/// <summary>Flush the storage manager</summary>
+			void Flush();
+
 		internal:
 			/// <summary>create the native IStorageManager</summary>
 			virtual ::SpatialIndex::IStorageManager *createUnmanagedManager() = 0;

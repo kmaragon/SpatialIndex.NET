@@ -27,41 +27,55 @@ KeyValuePair<IShape ^, Object ^> InternalHelpers::pairFromData(const ::SpatialIn
 
 	in.getData(dataLen, &realData);
 
-	IShape ^rtValue;
-
-	byte *valueBuffer;
-	int valueLen;
-	BinaryFormatter ^formatter = gcnew BinaryFormatter();
-
-	if (dataLen >= 10 && !memcmp(realData, __buffer_signature, __buffer_signature_length))
+	try
 	{
-		// this is probably a managed block
-		uint32_t shapeSize = *((uint32_t*)&realData[__buffer_signature_length]);
+		IShape ^rtValue;
 
-		auto shapeOffset = sizeof(uint32_t) + __buffer_signature_length;
-		valueLen = dataLen - (shapeSize + (int)shapeOffset);
-		valueBuffer = &realData[shapeSize + shapeOffset];
-		
-		rtValue = (IShape ^)formatter->Deserialize(gcnew UnmanagedMemoryStream(realData + shapeOffset, (Int64)shapeSize));
+		byte *valueBuffer;
+		int valueLen;
+		BinaryFormatter ^formatter = gcnew BinaryFormatter();
+
+		if (dataLen >= 10 && !memcmp(realData, __buffer_signature, __buffer_signature_length))
+		{
+			// this is probably a managed block
+			uint32_t shapeSize = *((uint32_t*)&realData[__buffer_signature_length]);
+
+			auto shapeOffset = sizeof(uint32_t) + __buffer_signature_length;
+			valueLen = dataLen - (shapeSize + (int)shapeOffset);
+			valueBuffer = &realData[shapeSize + shapeOffset];
+
+			rtValue = (IShape ^)formatter->Deserialize(gcnew UnmanagedMemoryStream(realData + shapeOffset, (Int64)shapeSize));
+		}
+		else
+		{
+			::SpatialIndex::IShape *realShape;
+
+			in.getShape(&realShape);
+			// turns out this is new'ed up
+			rtValue = gcnew UnmanagedOwnedShape(realShape);
+
+			valueBuffer = realData;
+			valueLen = dataLen;
+		}
+
+		auto valueStream = gcnew UnmanagedMemoryStream(valueBuffer, valueLen);
+
+		try
+		{
+			Object ^value = formatter->Deserialize(valueStream);
+			rtValue->Id = in.getIdentifier();
+			return KeyValuePair<IShape ^, Object ^>(rtValue, value);
+		}
+		finally
+		{
+			delete valueStream;
+		}
 	}
-	else
+	finally
 	{
-		::SpatialIndex::IShape *realShape;
-
-		in.getShape(&realShape);
-		rtValue = gcnew UnmanagedBorrowedShape(realShape);
-
-		valueBuffer = realData;
-		valueLen = dataLen;
+		delete[] realData;
 	}
-
-	auto valueStream = gcnew UnmanagedMemoryStream(valueBuffer, valueLen);
-	Object ^value = formatter->Deserialize(valueStream);
-	rtValue->Id = in.getIdentifier();
-
-	return KeyValuePair<IShape ^, Object ^>(rtValue, value);
 }
-
 
 generic<typename TValue>
 array<Byte> ^InternalHelpers::dataFromPair(IShape ^shape, TValue value)
@@ -96,10 +110,10 @@ array<Byte> ^InternalHelpers::dataFromPair(IShape ^shape, TValue value)
 	*((uint32_t *)dstptr) = (uint32_t)shapeStream->Position;
 	dstptr += sizeof(uint32_t);
 
-	memcpy(dstptr, (Byte*)managedBuffer, shapeStream->Position);
+	memcpy(dstptr, (Byte*)managedBuffer, (size_t)shapeStream->Position);
 	dstptr += shapeStream->Position;
 
-	memcpy(dstptr, (Byte*)serialBuffer, serialStream->Position);
+	memcpy(dstptr, (Byte*)serialBuffer, (size_t)serialStream->Position);
 
 	// free my streams
 	delete serialStream;
@@ -117,4 +131,32 @@ IShape ^InternalHelpers::getManagedFromNative(const ::SpatialIndex::IShape *shap
 		return wrapped->_shapeHandle.get();
 	}
 	return gcnew UnmanagedBorrowedShape(shape);
+}
+
+CountVisitor::CountVisitor()
+{
+	_count = 0;
+}
+
+CountVisitor::~CountVisitor()
+{
+}
+
+int CountVisitor::getResultCount() const
+{
+	return _count;
+}
+
+void CountVisitor::visitNode(const ::SpatialIndex::INode &in)
+{
+}
+
+void CountVisitor::visitData(const ::SpatialIndex::IData &in)
+{
+	++_count;
+}
+
+void CountVisitor::visitData(std::vector<const ::SpatialIndex::IData*> &v)
+{
+	_count += v.size();
 }

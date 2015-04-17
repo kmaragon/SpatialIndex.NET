@@ -13,24 +13,24 @@ namespace Konscious
 	{
 		namespace _visitors
 		{
-			delegate bool FilterCallback(IShape ^query, IShape ^queryShape);
+			delegate ISpatialIndexData ^CreateSpatialDataCallback(const ::SpatialIndex::IData &fromData);
 
 			class QueryWrappedVisitor : public ::SpatialIndex::IVisitor
 			{
 			public:
-				QueryWrappedVisitor(IShape ^query, FilterCallback ^filterCallback)
+				QueryWrappedVisitor(IShape ^query, CreateSpatialDataCallback ^dataCreator)
 				{
 					_query = query;
-					_filterCallback = filterCallback;
+					_createData = dataCreator;
 				}
 
 				virtual ~QueryWrappedVisitor()
 				{
 					_query.release();
-					delete _filterCallback;
+					delete _createData;
 				}
 
-				virtual void handle(IShape ^key, System::Object ^value) = 0;
+				virtual void handle(ISpatialIndexData ^value) = 0;
 
 			protected:
 				virtual void visitNode(const ::SpatialIndex::INode &in);
@@ -39,7 +39,7 @@ namespace Konscious
 
 			private:
 				msclr::auto_gcroot<IShape ^> _query;
-				gcroot<FilterCallback ^> _filterCallback;
+				gcroot<CreateSpatialDataCallback ^> _createData;
 			};
 
 			void QueryWrappedVisitor::visitNode(const ::SpatialIndex::INode &in)
@@ -49,14 +49,13 @@ namespace Konscious
 
 			void QueryWrappedVisitor::visitData(const ::SpatialIndex::IData &in)
 			{
-				auto kvp = _helpers::InternalHelpers::pairFromData(in);
-				if (_filterCallback->Invoke(_query.get(), kvp.Key))
-					this->handle(kvp.Key, kvp.Value);
+				auto data = _createData->Invoke(in);
+				this->handle(data);
 			}
 
 			void QueryWrappedVisitor::visitData(std::vector<const ::SpatialIndex::IData*> &v)
 			{
-				for (int i = 0; i < v.size(); ++i)
+				for (unsigned int i = 0; i < v.size(); ++i)
 				{
 					visitData(*v[i]);
 				}

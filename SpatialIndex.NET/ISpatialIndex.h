@@ -1,7 +1,7 @@
 #pragma once
-
 #include "IShape.h"
 #include "IStorageManager.h"
+#include "SpatialIndexData.h"
 
 namespace Konscious
 {
@@ -33,20 +33,32 @@ namespace Konscious
 			/// <summary>Delete an Item from the index</summary>
 			void Delete(IShape ^shape);
 
+			/// <summary>Iterate through the tree and find the leaves</summary>
+			property int Count
+			{
+				virtual int get();
+			}
+
 			/// <summary>Get an enumerable for traversing entries that are contained within a Shape</summary>
-			System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, TValue >> ^ContainsWhat(IShape ^Shape);
+			/// <remarks>Prefer not using the enumerable</remarks>
+			System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, TValue >> ^ContainsWhat(IShape ^shape);
 
 			/// <summary>Provide a callback for traversing entries that are contained within a Shape</summary>
-			void ContainsWhat(IShape ^Shape, System::Action<IShape ^, TValue > ^callback);
+			void ContainsWhat(IShape ^Shape, System::Action<SpatialIndexData<TValue> ^> ^callback);
 
 			/// <summary>Get an enumerable for traversing entries that intersect a Shape</summary>
-			System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, TValue >> ^IntersectsWith(IShape ^Shape);
+			/// <remarks>Prefer not using the enumerable</remarks>
+			System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, TValue >> ^IntersectsWith(IShape ^shape);
 			
 			/// <summary>Provide a callback for traversing entries that intersect a Shape</summary>
-			void IntersectsWith(IShape ^Shape, System::Action<IShape ^, TValue > ^callback);
+			void IntersectsWith(IShape ^Shape, System::Action<SpatialIndexData<TValue> ^> ^callback);
 
 			/// <summary>Get the top n nearest neighbors to the Shape</summary>
-			System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, TValue >> ^NearestNeighbors(System::UInt32 count, IShape ^Shape);
+			/// <remarks>Prefer not using the enumerable</remarks>
+			System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, TValue >> ^NearestNeighbors(System::UInt32 count, IShape ^shape);
+
+			/// <summary>Get the top n nearest neighbors to the Shape</summary>
+			void NearestNeighbors(System::UInt32 count, IShape ^shape, System::Action<SpatialIndexData<TValue> ^> ^callback);
 
 			/// <summary>IEnumerable.GetEnumerator override</summary>
 			/// <remarks>
@@ -66,6 +78,9 @@ namespace Konscious
 			/// </remarks>
 			virtual System::Collections::IEnumerator ^GetObjectEnumerator() = System::Collections::IEnumerable::GetEnumerator;
 
+			/// <summary>The most efficient way to do something on everything in the collection</summary>
+			virtual void ForEach(System::Action<SpatialIndexData<TValue> ^> ^callback);
+
 			/// <summary>ToString() implementation</summary>
 			System::String ^ToString() override;
 			
@@ -75,23 +90,25 @@ namespace Konscious
 			::SpatialIndex::ISpatialIndex *getIndex();
 
 		private:
-			System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^> > ^SortNeighbor(
-				IShape ^query,
-				System::Collections::Generic::List<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^> > ^list
-				);
-
-			static bool __contains(IShape ^query, IShape ^queryShape);
-			static bool __intersects(IShape ^query, IShape ^queryShape);
-			static bool __nearest(IShape ^query, IShape ^queryShape);
-
+			static ISpatialIndexData ^__createData(const ::SpatialIndex::IData &in);
 			static System::Collections::Generic::KeyValuePair<IShape ^, TValue> __cast(System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^> pair);
 			
 			ref struct ActionWrapper
 			{
 			public:
-				ActionWrapper(System::Action<IShape ^, TValue> ^realAct);
-				void WrapCall(IShape ^shape, System::Object ^value);
-				System::Action<IShape ^, TValue> ^Action;
+				ActionWrapper(System::Action<SpatialIndexData<TValue> ^> ^realAct);
+				void WrapCall(ISpatialIndexData ^data);
+				System::Action<SpatialIndexData<TValue> ^> ^Action;
+			};
+
+			ref class IntersectsChecker
+			{
+			public:
+				IntersectsChecker(IShape ^query);
+				bool Intersects(System::Collections::Generic::KeyValuePair<IShape ^, TValue> value);
+
+			private:
+				IShape ^_query;
 			};
 
 			ref class DistanceComparer : public System::Collections::Generic::IComparer<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^>>

@@ -15,12 +15,34 @@ Region::Region(cli::array<double> ^min, cli::array<double> ^max)
 	pin_ptr<double> low = &min[0];
 	pin_ptr<double> high = &max[0];
 
-	_region = new ::SpatialIndex::Region(low, high, min->Length);
+	try
+	{
+		_region = new ::SpatialIndex::Region(low, high, min->Length);
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
 }
 
 Region::Region(Point ^min, Point ^max)
 {
-	_region = new ::SpatialIndex::Region(*min->_point, *max->_point);
+	try
+	{
+		_region = new ::SpatialIndex::Region(*min->_point, *max->_point);
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
 }
 
 Region::!Region()

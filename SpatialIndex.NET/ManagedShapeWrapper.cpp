@@ -101,5 +101,5 @@ void ManagedShapeWrapper::storeToByteArray(byte** data, uint32_t& length)
 	*data = new byte[length + sizeof(int)];
 	pin_ptr<byte> starting = &nStream->ToArray()[0];
 	*((int *)(*data)) = length;
-	memcpy((*data + sizeof(int)), starting, nStream->Length);
+	memcpy((*data + sizeof(int)), starting, (size_t)nStream->Length);
 }
