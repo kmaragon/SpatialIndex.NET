@@ -40,6 +40,7 @@ RTreeOptions::!RTreeOptions()
 RTreeOptions::~RTreeOptions()
 {
 	this->!RTreeOptions();
+	GC::SuppressFinalize(this);
 }
 
 double RTreeOptions::FillFactor::get()

@@ -1,7 +1,7 @@
 #include "stdafx.h"
-
 #include "IStorageManager.h"
 
+using namespace System;
 using namespace Konscious::SpatialIndex;
 
 IStorageManager::IStorageManager() :
@@ -31,6 +31,7 @@ IStorageManager::!IStorageManager()
 IStorageManager::~IStorageManager()
 {
 	this->!IStorageManager();
+	GC::SuppressFinalize(this);
 }
 
 void IStorageManager::Flush()

@@ -1,5 +1,7 @@
 # Visual Studio Artifacts
 *proj.user
+*.ncrunchsolution
+*.ncrunchsolution.user
 
 # Build Artifacts
 */bin/*
@@ -11,6 +13,9 @@
 *.lo
 *.o
 *.obj
+
+# NCrunch files
+*.ncrunchproject
 
 # Precompiled Headers
 *.gch
@@ -34,3 +39,6 @@
 *.exe
 *.out
 *.app
+
+# Nuget packages
+*.nupkg

@@ -54,6 +54,7 @@ Region::!Region()
 Region::~Region()
 {
 	this->!Region();
+	GC::SuppressFinalize(this);
 }
 
 Point ^Region::Minimum::get()

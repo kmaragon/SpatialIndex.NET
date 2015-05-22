@@ -29,16 +29,8 @@ ISpatialIndex<TValue>::!ISpatialIndex()
 {
 	if (_realIndex != nullptr)
 	{
-		Monitor::Enter(this);
-		try
-		{
-			delete _realIndex;
-			_realIndex = nullptr;
-		}
-		finally
-		{
-			Monitor::Exit(this);
-		}
+		delete _realIndex;
+		_realIndex = nullptr;
 	}
 }
 
@@ -46,6 +38,7 @@ generic<typename TValue>
 ISpatialIndex<TValue>::~ISpatialIndex()
 {
 	this->!ISpatialIndex();
+	GC::SuppressFinalize(this);
 }
 
 generic<typename TValue>
