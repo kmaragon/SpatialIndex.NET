@@ -11,8 +11,14 @@ MemoryStorageManager::MemoryStorageManager()
 {
 }
 
+MemoryStorageManager::!MemoryStorageManager()
+{
+}
+
 MemoryStorageManager::~MemoryStorageManager()
 {
+	this->!MemoryStorageManager();
+	GC::SuppressFinalize(this);
 }
 
 ::SpatialIndex::IStorageManager *MemoryStorageManager::createUnmanagedManager()

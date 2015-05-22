@@ -13,8 +13,11 @@ namespace Konscious
 			/// <summary>Construct a MemoryStorageManager</summary>
 			MemoryStorageManager();
 
+			/// <summary>Disposer</summary>
+			!MemoryStorageManager();
+
 			/// </summary>Destructor</summary>
-			~MemoryStorageManager();
+			virtual ~MemoryStorageManager();
 
 		internal:
 			virtual ::SpatialIndex::IStorageManager *createUnmanagedManager() override;

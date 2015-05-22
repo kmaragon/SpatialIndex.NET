@@ -5,6 +5,7 @@
 #pragma managed(pop)
 #include <msclr/auto_gcroot.h>
 #include "IShape.h"
+#include "QueryWrappedVisitor.h"
 
 namespace Konscious
 {
@@ -12,21 +13,43 @@ namespace Konscious
 	{
 		namespace _visitors
 		{
-			class ListConstructionVisitor : public ::SpatialIndex::IVisitor
+			class ListConstructionVisitor : public QueryWrappedVisitor
 			{
 			public:
-				ListConstructionVisitor();
-				~ListConstructionVisitor();
+				ListConstructionVisitor(IShape ^query)
+					: QueryWrappedVisitor(query, gcnew CreateSpatialDataCallback(&CreateDataAsObject))
+				{
+					_list = gcnew System::Collections::Generic::List<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^> >();
+				}
 
-				System::Collections::Generic::List<System::Collections::Generic::KeyValuePair<IShape ^, array<byte> ^> > ^Data() const;
+				~ListConstructionVisitor()
+				{
+					_list.release();
+				}
 
-				virtual void visitNode(const ::SpatialIndex::INode &in);
-				virtual void visitData(const ::SpatialIndex::IData &in);
-				virtual void visitData(std::vector<const ::SpatialIndex::IData*> &v);
+				virtual void handle(ISpatialIndexData ^value);
+
+				virtual System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^>> ^Data();
 
 			private:
-				msclr::auto_gcroot<System::Collections::Generic::List<System::Collections::Generic::KeyValuePair<IShape ^, array<byte> ^> > ^> _list;
+				static ISpatialIndexData ^CreateDataAsObject(const ::SpatialIndex::IData &in)
+				{
+					return gcnew SpatialIndexData<System::Object ^>(in);
+				}
+
+				msclr::auto_gcroot<System::Collections::Generic::List<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^>> ^> _list;
 			};
+
+			void ListConstructionVisitor::handle(ISpatialIndexData ^value)
+			{
+				auto objData = (SpatialIndexData<System::Object ^> ^)value;
+				_list.get()->Add(System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^>(objData->Shape, objData->Value));
+			}
+
+			System::Collections::Generic::IEnumerable<System::Collections::Generic::KeyValuePair<IShape ^, System::Object ^>> ^ListConstructionVisitor::Data()
+			{
+				return _list.get();
+			}
 		}
 	}
 }

@@ -11,13 +11,25 @@ DiskStorageManager::DiskStorageManager(String ^filename)
 {
 	_initialized = false;
 	_props = new _dsm_internal_data;
-	_props->overwrite = true;
+	
+	// set the defaults
+	this->PageSize = 8192;
+	this->Overwrite = true;
+	this->DatafileSuffix = "data";
+	this->IndexfileSuffix = "index";
 	this->Filename = filename;
+}
+
+DiskStorageManager::!DiskStorageManager()
+{
+	delete _props;
+	_props = nullptr;
 }
 
 DiskStorageManager::~DiskStorageManager()
 {
-	delete _props;
+	this->!DiskStorageManager();
+	GC::SuppressFinalize(this);
 }
 
 #define CheckInitialized() \

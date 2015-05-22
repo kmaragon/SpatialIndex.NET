@@ -19,6 +19,8 @@ namespace Konscious
 
 			IManagedShapeBase(System::Runtime::Serialization::SerializationInfo ^info, System::Runtime::Serialization::StreamingContext context);
 
+			!IManagedShapeBase();
+
 			virtual ~IManagedShapeBase();
 
 			virtual bool Intersects(IShape ^in) = 0;

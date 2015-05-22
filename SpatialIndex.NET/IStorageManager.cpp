@@ -1,7 +1,7 @@
 #include "stdafx.h"
-
 #include "IStorageManager.h"
 
+using namespace System;
 using namespace Konscious::SpatialIndex;
 
 IStorageManager::IStorageManager() :
@@ -18,10 +18,23 @@ IStorageManager::IStorageManager() :
 	return _unmanagedObject;
 }
 
+IStorageManager::!IStorageManager()
+{
+	if (_unmanagedObject != nullptr)
+	{
+		_unmanagedObject->flush();
+		delete _unmanagedObject;
+		_unmanagedObject = nullptr;
+	}
+}
+
 IStorageManager::~IStorageManager()
 {
-	if (_unmanagedObject == nullptr)
-	{
-		delete _unmanagedObject;
-	}
+	this->!IStorageManager();
+	GC::SuppressFinalize(this);
+}
+
+void IStorageManager::Flush()
+{
+	this->getManager()->flush();
 }

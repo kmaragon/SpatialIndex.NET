@@ -1,23 +1,31 @@
 #include "stdafx.h"
+#include "InternalHelpers.h"
 #include "ISpatialIndex.h"
 #include "ListConstructionVisitor.h"
 #include "ActionExecutorVisitor.h"
 #include "WholeWorldShape.h"
 #include "SpatialIndexException.h"
+#include "UnmanagedBorrowedShape.h"
+#include "IManagedShapeBase.h"
 
 using namespace Konscious::SpatialIndex;
 using namespace Konscious::SpatialIndex::_shapes;
 using namespace Konscious::SpatialIndex::_visitors;
+using namespace Konscious::SpatialIndex::_helpers;
 using namespace System;
 using namespace System::Collections::Generic;
+using namespace System::Linq;
+using namespace System::Threading;
 
-ISpatialIndex::ISpatialIndex(IStorageManager ^manager)
+generic<typename TValue>
+ISpatialIndex<TValue>::ISpatialIndex(IStorageManager ^manager)
 {
 	_realIndex = nullptr;
 	_manager = manager;
 }
 
-ISpatialIndex::~ISpatialIndex()
+generic<typename TValue>
+ISpatialIndex<TValue>::!ISpatialIndex()
 {
 	if (_realIndex != nullptr)
 	{
@@ -26,12 +34,25 @@ ISpatialIndex::~ISpatialIndex()
 	}
 }
 
-void ISpatialIndex::Add(IShape ^shape, cli::array<byte> ^data)
+generic<typename TValue>
+ISpatialIndex<TValue>::~ISpatialIndex()
 {
-	pin_ptr<byte> pinnedData = &data[0];
+	this->!ISpatialIndex();
+	GC::SuppressFinalize(this);
+}
+
+generic<typename TValue>
+void ISpatialIndex<TValue>::Add(IShape ^shape, TValue data)
+{
+	auto bytedata = InternalHelpers::dataFromPair(shape, data);
+	pin_ptr<Byte> pinnedData = &bytedata[0];
+
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
 	try
 	{
-		getIndex()->insertData(data->Length, (byte*)pinnedData, *shape->getShape(), shape->Id);
+		getIndex()->insertData(bytedata->Length, (byte*)pinnedData, *shape->getShape(), shape->Id);
 	}
 	catch (::Tools::Exception &spatialException)
 	{
@@ -41,10 +62,18 @@ void ISpatialIndex::Add(IShape ^shape, cli::array<byte> ^data)
 	{
 		throw gcnew System::Exception(gcnew System::String(exc.what()));
 	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
 }
 
-void ISpatialIndex::Delete(IShape ^shape)
+generic<typename TValue>
+void ISpatialIndex<TValue>::Delete(IShape ^shape)
 {
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
 	try
 	{
 		getIndex()->deleteData(*shape->getShape(), shape->Id);
@@ -57,70 +86,393 @@ void ISpatialIndex::Delete(IShape ^shape)
 	{
 		throw gcnew System::Exception(gcnew System::String(exc.what()));
 	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
 }
 
-IEnumerable<KeyValuePair<IShape ^, array<byte> ^>> ^ISpatialIndex::ContainsWhat(IShape ^Shape)
+generic<typename TValue>
+int ISpatialIndex<TValue>::Count::get()
 {
-	ListConstructionVisitor visitor;
-	getIndex()->containsWhatQuery(*Shape->getShape(), visitor);
-	return visitor.Data();
-}
+	CountVisitor cv;
 
-void ISpatialIndex::ContainsWhat(IShape ^Shape, Action<IShape ^, array<byte> ^> ^callback)
-{
-	ActionExecutorVisitor visitor(callback);
-	getIndex()->containsWhatQuery(*Shape->getShape(), visitor);
-}
-
-IEnumerable<KeyValuePair<IShape ^, array<byte> ^>> ^ISpatialIndex::IntersectsWith(IShape ^Shape)
-{
-	ListConstructionVisitor visitor;
-	getIndex()->intersectsWithQuery(*Shape->getShape(), visitor);
-	return visitor.Data();
-}
-
-void ISpatialIndex::IntersectsWith(IShape ^Shape, System::Action<IShape ^, array<byte> ^> ^callback)
-{
-	ActionExecutorVisitor visitor(callback);
-	getIndex()->intersectsWithQuery(*Shape->getShape(), visitor);
-}
-
-ICollection<KeyValuePair<IShape ^, array<byte> ^>> ^ISpatialIndex::NearestNeighbors(System::UInt32 count, IShape ^Shape)
-{
-	ListConstructionVisitor visitor;
-	getIndex()->nearestNeighborQuery(count, *Shape->getShape(), visitor);
-	return visitor.Data();
-}
-
-IEnumerator<KeyValuePair<IShape ^, array<byte> ^>> ^ISpatialIndex::GetEnumerator()
-{
-	ListConstructionVisitor visitor;
 	WholeWorldShape scan(dimensions());
-	getIndex()->intersectsWithQuery(scan, visitor);
 
-	return visitor.Data()->GetEnumerator();
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
+	try
+	{
+		getIndex()->intersectsWithQuery(scan, cv);
+		return cv.getResultCount();
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
 }
 
-System::Collections::IEnumerator ^ISpatialIndex::GetObjectEnumerator()
+generic<typename TValue>
+IEnumerable<KeyValuePair<IShape ^, TValue> > ^ISpatialIndex<TValue>::ContainsWhat(IShape ^shape)
+{
+	ListConstructionVisitor visitor(shape);
+
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
+	try
+	{
+		getIndex()->containsWhatQuery(*shape->getShape(), visitor);
+		return Enumerable::Select<KeyValuePair<IShape ^, Object ^>, KeyValuePair<IShape ^, TValue> >(
+			visitor.Data(), 
+			gcnew Func<KeyValuePair<IShape ^, Object ^>, KeyValuePair<IShape ^, TValue> >(&__cast));
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
+}
+
+generic<typename TValue>
+void ISpatialIndex<TValue>::ContainsWhat(IShape ^shape, Action<SpatialIndexData<TValue> ^> ^callback)
+{
+	auto wrapper = gcnew ActionWrapper(callback);
+
+	ActionExecutorVisitor visitor(shape, gcnew Action<ISpatialIndexData ^>(wrapper, &ActionWrapper::WrapCall), gcnew CreateSpatialDataCallback(&__createData));
+
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
+	try
+	{
+		// libspatial index isn't thread safe even for reads due to recycled memory buffers
+		getIndex()->containsWhatQuery(*shape->getShape(), visitor);
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
+}
+
+generic<typename TValue>
+IEnumerable<KeyValuePair<IShape ^, TValue> > ^ISpatialIndex<TValue>::IntersectsWith(IShape ^shape)
+{
+	auto checker = gcnew IntersectsChecker(shape);
+	auto checkerDelegate = gcnew Func<KeyValuePair<IShape ^, TValue>, bool>(checker, &IntersectsChecker::Intersects);
+
+	ListConstructionVisitor visitor(shape);
+
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
+	try
+	{
+		if (shape->GetType() == Point::typeid)
+		{
+			// special query for points
+			getIndex()->pointLocationQuery(*((Point ^)shape)->_point, visitor);
+		}
+		else
+		{
+			getIndex()->intersectsWithQuery(*shape->getShape(), visitor);
+		}
+		auto unfiltered = Enumerable::Select<KeyValuePair<IShape ^, Object ^>, KeyValuePair<IShape ^, TValue> >(
+			visitor.Data(),
+			gcnew Func<KeyValuePair<IShape ^, Object ^>, KeyValuePair<IShape ^, TValue> >(&__cast));
+
+		return Enumerable::Where<KeyValuePair<IShape ^, TValue>>(unfiltered, checkerDelegate);
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
+}
+
+generic<typename TValue>
+void ISpatialIndex<TValue>::IntersectsWith(IShape ^shape, System::Action<SpatialIndexData<TValue> ^> ^callback)
+{
+	auto wrapper = gcnew ActionWrapper(callback);
+
+	ActionExecutorVisitor visitor(shape, gcnew Action<ISpatialIndexData ^>(wrapper, &ActionWrapper::WrapCall), gcnew CreateSpatialDataCallback(&__createData));
+
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
+	try
+	{
+		if (shape->GetType() == Point::typeid)
+		{
+			getIndex()->pointLocationQuery(*((Point ^)shape)->_point, visitor);
+		}
+		else
+		{
+			getIndex()->intersectsWithQuery(*shape->getShape(), visitor);
+		}
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
+}
+
+generic<typename TValue>
+IEnumerable<KeyValuePair<IShape ^,TValue>> ^ISpatialIndex<TValue>::NearestNeighbors(System::UInt32 count, IShape ^shape)
+{
+	ListConstructionVisitor visitor(shape);
+
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
+	try
+	{
+		getIndex()->nearestNeighborQuery(count, *shape->getShape(), visitor);
+
+		return Enumerable::Select<KeyValuePair<IShape ^, Object ^>, KeyValuePair<IShape ^, TValue> >(
+			visitor.Data(),
+			gcnew Func<KeyValuePair<IShape ^, Object ^>, KeyValuePair<IShape ^, TValue> >(&__cast));
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
+}
+
+generic<typename TValue>
+void ISpatialIndex<TValue>::NearestNeighbors(System::UInt32 count, IShape ^shape, System::Action<SpatialIndexData<TValue> ^> ^callback)
+{
+	auto wrapper = gcnew ActionWrapper(callback);
+
+	ActionExecutorVisitor visitor(shape, gcnew Action<ISpatialIndexData ^>(wrapper, &ActionWrapper::WrapCall), gcnew CreateSpatialDataCallback(&__createData));
+
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
+	try
+	{
+		getIndex()->nearestNeighborQuery(count, *shape->getShape(), visitor);
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
+}
+
+generic<typename TValue>
+IEnumerator<KeyValuePair<IShape ^, TValue>> ^ISpatialIndex<TValue>::GetEnumerator()
+{
+	WholeWorldShape scan(dimensions());
+
+	auto borrowed = gcnew UnmanagedBorrowedShape(&scan);
+	ListConstructionVisitor visitor(borrowed);
+
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
+	try
+	{
+		getIndex()->intersectsWithQuery(scan, visitor);
+		delete borrowed;
+
+		return Enumerable::Select<KeyValuePair<IShape ^, Object ^>, KeyValuePair<IShape ^, TValue> >(
+			visitor.Data(),
+			gcnew Func<KeyValuePair<IShape ^, Object ^>, KeyValuePair<IShape ^, TValue> >(&__cast))->GetEnumerator();
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
+}
+
+generic<typename TValue>
+System::Collections::IEnumerator ^ISpatialIndex<TValue>::GetObjectEnumerator()
 {
 	return this->GetEnumerator();
 }
 
-String ^ISpatialIndex::ToString()
+generic<typename TValue>
+void ISpatialIndex<TValue>::ForEach(Action<SpatialIndexData<TValue> ^> ^callback)
 {
-	std::ostringstream wrstream;
+	WholeWorldShape scan(dimensions());
 
-	wrstream << *getIndex();
-	wrstream.flush();
+	auto borrowed = gcnew UnmanagedBorrowedShape(&scan);
+	auto wrapper = gcnew ActionWrapper(callback);
+	ActionExecutorVisitor visitor(borrowed, gcnew Action<ISpatialIndexData ^>(wrapper, &ActionWrapper::WrapCall), gcnew CreateSpatialDataCallback(&__createData));
 
-	return gcnew String(wrstream.str().c_str());
+	// libspatial index isn't thread safe
+	Monitor::Enter(this);
+
+	try
+	{
+		getIndex()->intersectsWithQuery(scan, visitor);
+		delete borrowed;
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
+	finally
+	{
+		Monitor::Exit(this);
+	}
 }
 
-::SpatialIndex::ISpatialIndex *ISpatialIndex::getIndex()
+generic<typename TValue>
+String ^ISpatialIndex<TValue>::ToString()
+{
+	try
+	{
+		std::ostringstream wrstream;
+
+		wrstream << *getIndex();
+		wrstream.flush();
+
+		return gcnew String(wrstream.str().c_str());
+	}
+	catch (::Tools::Exception &spatialException)
+	{
+		throw gcnew SpatialIndexException(spatialException);
+	}
+	catch (const std::exception &exc)
+	{
+		throw gcnew System::Exception(gcnew System::String(exc.what()));
+	}
+}
+
+generic<typename TValue>
+::SpatialIndex::ISpatialIndex *ISpatialIndex<TValue>::getIndex()
 {
 	if (_realIndex == nullptr)
 	{
 		_realIndex = this->createRealIndex(_manager->getManager());
 	}
 	return _realIndex;
+}
+
+generic<typename TValue>
+ISpatialIndex<TValue>::IntersectsChecker::IntersectsChecker(IShape ^query)
+{
+	_query = query;
+}
+
+generic<typename TValue>
+bool ISpatialIndex<TValue>::IntersectsChecker::Intersects(KeyValuePair<IShape ^, TValue> value)
+{
+	// this can be bidirectional - let's make sure both ends work
+	// spatialindex already took care of one end
+	if (IManagedShapeBase::typeid->IsInstanceOfType(value.Key))
+		return ((IManagedShapeBase ^)value.Key)->Intersects(_query);
+
+	return true;
+}
+
+generic<typename TValue>
+ISpatialIndexData ^ISpatialIndex<TValue>::__createData(const ::SpatialIndex::IData &in)
+{
+	return gcnew SpatialIndexData<TValue>(in);
+}
+
+generic<typename TValue>
+KeyValuePair<IShape ^, TValue> ISpatialIndex<TValue>::__cast(KeyValuePair<IShape ^, Object ^> pair)
+{
+	return KeyValuePair<IShape ^, TValue>(pair.Key, (TValue)pair.Value);
+}
+
+generic<typename TValue>
+ISpatialIndex<TValue>::ActionWrapper::ActionWrapper(System::Action<SpatialIndexData<TValue> ^> ^realAct)
+{
+	Action = realAct;
+}
+
+generic<typename TValue>
+void ISpatialIndex<TValue>::ActionWrapper::WrapCall(ISpatialIndexData ^value)
+{
+	Action->Invoke((SpatialIndexData<TValue> ^) value);
+}
+
+generic<typename TValue>
+ISpatialIndex<TValue>::DistanceComparer::DistanceComparer(IShape ^query)
+{
+	_query = query;
+}
+
+generic<typename TValue>
+int ISpatialIndex<TValue>::DistanceComparer::Compare(KeyValuePair<IShape ^, System::Object ^> a, KeyValuePair<IShape ^, System::Object ^> b)
+{
+	auto distA = a.Key->getShape()->getMinimumDistance(*_query->getShape());
+	auto distB = b.Key->getShape()->getMinimumDistance(*_query->getShape());
+
+	if (distA > distB)
+		return 1;
+	if (distA < distB)
+		return -1;
+	return 0;
 }

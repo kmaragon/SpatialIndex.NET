@@ -24,8 +24,11 @@ namespace Konscious
 			/// <param name="filename">The base name for both the index and data files to use</param>
 			DiskStorageManager(System::String ^filename);
 
+			/// <summary>Disposer?</summary>
+			!DiskStorageManager();
+
 			/// </summary>Destructor</summary>
-			~DiskStorageManager();
+			virtual ~DiskStorageManager();
 
 			/// <summary>Whether or not the files should be overwritten if they already exist</summary>
 			property bool Overwrite

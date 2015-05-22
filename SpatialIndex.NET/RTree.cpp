@@ -17,11 +17,30 @@ using namespace System;
 #define DEFAULT_POINT_POOL_CAPACITY 500U
 #define DEFAULT_DIMENSION 2U
 #define DEFAULT_TIGHT_MBRS true
-#define DEFAULT_TREE_VARIANT (unsigned int)RTreeVariant::RStar
+#define DEFAULT_TREE_VARIANT (int)RTreeVariant::RStar
 
-RTreeOptions::RTreeOptions()
+RTreeOptions::RTreeOptions() :
+	RTreeOptions(RTreeOptions::NewIndex)
+{
+}
+
+RTreeOptions::RTreeOptions(System::Int64 indexIdentifier)
 {
 	_set = new PropertySet;
+	if (indexIdentifier != NewIndex)
+		IndexIdentifier = indexIdentifier;
+}
+
+RTreeOptions::!RTreeOptions()
+{
+	delete _set;
+	_set = nullptr;
+}
+
+RTreeOptions::~RTreeOptions()
+{
+	this->!RTreeOptions();
+	GC::SuppressFinalize(this);
 }
 
 double RTreeOptions::FillFactor::get()
@@ -151,7 +170,7 @@ RTreeVariant RTreeOptions::TreeVariant::get()
 
 void RTreeOptions::TreeVariant::set(RTreeVariant value)
 {
-	setOption(*_set, "TreeVariant", (unsigned int)value);
+	setOption(*_set, "TreeVariant", (int)value);
 }
 
 Int64 RTreeOptions::IndexIdentifier::get()
@@ -224,6 +243,16 @@ unsigned int RTreeOptions::getOption(PropertySet &props, const char *option, uns
 	return val.m_val.ulVal;
 }
 
+int RTreeOptions::getOption(PropertySet &props, const char *option, int defaultValue)
+{
+	auto val = props.getProperty(option);
+	if (val.m_varType != VT_LONG)
+	{
+		return defaultValue;
+	}
+	return val.m_val.lVal;
+}
+
 double RTreeOptions::getOption(PropertySet &props, const char *option, double defaultValue)
 {
 	auto val = props.getProperty(option);
@@ -244,26 +273,55 @@ Int64 RTreeOptions::getOption(PropertySet &props, const char *option, Int64 defa
 	return val.m_val.llVal;
 }
 
-RTree::RTree(RTreeOptions ^initOptions, IStorageManager ^manager)
+generic<typename TValue>
+RTree<TValue>::RTree(RTreeOptions ^initOptions, IStorageManager ^manager)
 	: ISpatialIndex(manager)
 {
-	_options = initOptions;
+	_options = gcnew RTreeOptions();
+	
+	byte *copyTo;
+	uint32_t len;
+	initOptions->_set->storeToByteArray(&copyTo, len);
+	try
+	{
+		_options->_set->loadFromByteArray(copyTo);
+	}
+	finally
+	{
+		delete copyTo;
+	}
 }
 
-RTreeOptions ^RTree::Options::get()
+generic<typename TValue>
+RTree<TValue>::!RTree()
+{
+	delete _options;
+	_options = nullptr;
+}
+
+generic<typename TValue>
+RTree<TValue>::~RTree()
+{
+	this->!RTree();
+}
+
+generic<typename TValue>
+RTreeOptions ^RTree<TValue>::Options::get()
 {
 	getIndex()->getIndexProperties(*_options->_set);
 	return _options;
 }
 
-::SpatialIndex::ISpatialIndex *RTree::createRealIndex(::SpatialIndex::IStorageManager *manager)
+generic<typename TValue>
+::SpatialIndex::ISpatialIndex *RTree<TValue>::createRealIndex(::SpatialIndex::IStorageManager *manager)
 {
-	PropertySet options;
+	PropertySet *options = _options->_set;
 
-	return ::SpatialIndex::RTree::returnRTree(*manager, options);
+	return ::SpatialIndex::RTree::returnRTree(*manager, *options);
 }
 
-int RTree::dimensions()
+generic<typename TValue>
+int RTree<TValue>::dimensions()
 { 
 	return _options->Dimensions;
 }

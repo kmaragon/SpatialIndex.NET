@@ -39,6 +39,30 @@ namespace Konscious.SpatialIndex.Test
             Assert.True(File.Exists(filename + ".index"));
         }
 
+        [Fact]
+        public void DiskStorageManager_ItStillWorksWithDefaults()
+        {
+            var filename = Path.GetTempFileName();
+            var storageManager = new DiskStorageManager(filename);
+
+            // a random but repeatable seed
+            var buffer = DataHelpers.GenerateSomeBytes(10927424);
+            var nAccess = new StorageManagerAccess(storageManager);
+            var page1 = nAccess.Store(-1, buffer);
+
+            var buffer2 = DataHelpers.GenerateSomeBytes(48202378);
+            var page2 = nAccess.Store(-1, buffer2);
+
+            Assert.True(buffer.SequenceEqual(nAccess.Load(page1)));
+            Assert.True(buffer2.SequenceEqual(nAccess.Load(page2)));
+
+            buffer = DataHelpers.GenerateSomeBytes(1234134);
+            page1 = nAccess.Store(page1, buffer);
+            Assert.True(buffer.SequenceEqual(nAccess.Load(page1)));
+
+            Assert.True(File.Exists(filename + "." + storageManager.DatafileSuffix));
+            Assert.True(File.Exists(filename + "." + storageManager.IndexfileSuffix));
+        }
 
         [Fact]
         public void DiskStorageManager_CanRestoreAndRead()

@@ -3,6 +3,7 @@
 #include "SpatialIndexException.h"
 #include "Region.h"
 
+using namespace System;
 using namespace Konscious::SpatialIndex;
 
 Point::Point(... cli::array<double> ^coords)
@@ -45,9 +46,16 @@ Region ^Point::BoundingRegion::get()
 	return gcnew Region(this, this);
 }
 
-Point::~Point()
+Point::!Point()
 {
 	delete _point;
+	_point = nullptr;
+}
+
+Point::~Point()
+{
+	this->!Point();
+	GC::SuppressFinalize(this);
 }
 
 Point::Point(::SpatialIndex::Point *point)
