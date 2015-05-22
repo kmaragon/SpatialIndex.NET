@@ -1,8 +1,6 @@
 # SpatialIndex.NET
 A library providing .NET bindings for libspatialindex
 
-* NOTE: This is about to undergo a facelift to be more like a dictionary *
-
 ## Getting Started
 1. Install the NuGet package
 2. Add a reference to SpatialIndex.NET
@@ -22,6 +20,6 @@ Once the RTree is constructed, you can start putting shapes into it. Provided wi
 libspatialindex excecptions will be thrown in the form of SpatialIndexException. Any other weird native C++ exceptions bubble up as Exception with an error message.
 
 ## Building
-Right now the linked libspatialindex is just here in libspatialindex. This is the pre-downloaded 64 bit windows binary. To build in 32 bit, you will currently need to change all of the config in the SpatialIndex.NET project to point to a 32 bit version. And of course the build configuration will change. If someone needs a 32 bit version - feel free to update the package to distribute both a 32 and 64 bit version. At the moment, I only need a 64 bit one.
+Right now the linked libspatialindex is just here in libspatialindex. This is the pre-downloaded 64 bit windows binary. To build in 32 bit, you will currently need to change all of the config in the SpatialIndex.NET project to point to a 32 bit version. And of course the build configuration will change. If someone needs a 32 bit version - feel free to update the package to distribute both a 32 and 64 bit version. At the moment, I only need a 64 bit one. Although for the sake of testing, a 32 bit binary is here in the repository even though it's not in any nuget package that's published.
 
 The build is otherwise largely ready. You also might want an xunit test runner if you have a Visual Studio without support
