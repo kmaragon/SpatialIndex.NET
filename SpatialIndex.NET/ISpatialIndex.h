@@ -60,6 +60,12 @@ namespace Konscious
 			/// <summary>Get the top n nearest neighbors to the Shape</summary>
 			void NearestNeighbors(System::UInt32 count, IShape ^shape, System::Action<SpatialIndexData<TValue> ^> ^callback);
 
+			/// <summary>Get the storage manager under the index</summary>
+			property IStorageManager ^StorageManager
+			{
+				virtual IStorageManager ^get();
+			}
+
 			/// <summary>IEnumerable.GetEnumerator override</summary>
 			/// <remarks>
 			/// It is advisable to not use this. It loads the entire tree into a list and
