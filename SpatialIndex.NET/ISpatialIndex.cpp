@@ -286,6 +286,14 @@ IEnumerable<KeyValuePair<IShape ^,TValue>> ^ISpatialIndex<TValue>::NearestNeighb
 	}
 }
 
+
+/// <summary>Get the storage manager under the index</summary>
+generic<typename TValue>
+IStorageManager ^ISpatialIndex<TValue>::StorageManager::get()
+{
+	return _manager;
+}
+
 generic<typename TValue>
 void ISpatialIndex<TValue>::NearestNeighbors(System::UInt32 count, IShape ^shape, System::Action<SpatialIndexData<TValue> ^> ^callback)
 {
